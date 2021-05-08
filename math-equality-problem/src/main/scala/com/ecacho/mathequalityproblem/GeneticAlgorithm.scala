@@ -1,7 +1,7 @@
 package com.ecacho.mathequalityproblem
 
 import scala.util.Random
-import scala.util.control.Breaks.breakable
+import scala.util.control.Breaks.{break, breakable}
 
 /**
  * Generic abstract class to handle Genetic Algorithm
@@ -42,7 +42,7 @@ abstract class GeneticAlgorithm {
     })
 
   private def selectGens(materialByFitness: Seq[ChromoFitness]): Population = {
-    val total = materialByFitness.foldLeft(BigDecimal(0))({ case (acc, item) => acc + item.fitness})
+    val total = materialByFitness.map(_.fitness).sum
 
     val material = materialByFitness
       .map(it => (it.fitness / total, it.chromosome))
@@ -60,8 +60,9 @@ abstract class GeneticAlgorithm {
 
         breakable {
           for( (probability, gen) <- material) {
-            if (last >= rnd && rnd <= probability) {
+            if (rnd >= last && rnd <= probability) {
               result = gen
+              break
             }
             last = probability
           }
