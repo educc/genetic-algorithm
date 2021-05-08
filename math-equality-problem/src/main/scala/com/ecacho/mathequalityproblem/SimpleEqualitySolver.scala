@@ -3,10 +3,11 @@ package com.ecacho.mathequalityproblem
 import scala.util.Random
 
 
+case class VarGen(value: Int) extends Gen
+
 class SimpleEqualitySolver extends GeneticAlgorithm {
 
   override val populationMax = 100
-  case class VarGen(value: Int) extends Gen
 
   override def populationGenerator(): LazyList[Chromosome] =
     LazyList.from(0).map(_ => {
@@ -21,14 +22,15 @@ class SimpleEqualitySolver extends GeneticAlgorithm {
     val c = chromosome(2).asInstanceOf[VarGen].value
     val d = chromosome(3).asInstanceOf[VarGen].value
 
-    val r = BigDecimal(1) / BigDecimal(1 + Math.abs((a + 2*b + 3*c + 4*d) - 30))
+    val r = BigDecimal(1) / BigDecimal(1 + Math.abs(((a) + (2*b) + (3*c) - (15*d)) - 30))
     r.setScale(4, BigDecimal.RoundingMode.HALF_DOWN)
   }
 
   override def mutate(chromosome: Chromosome): Chromosome = {
-    val newValue = VarGen(Random.between(0,30))
     val idx = Random.between(0, 4)
-    chromosome.patch(idx, Seq(newValue), 1)
+    val increase = if (Random.between(1,3) == 1) 1 else -1
+    val newValue = chromosome(idx).asInstanceOf[VarGen].value + increase
+    chromosome.patch(idx, Seq(VarGen(newValue)), 1)
   }
 
 }
@@ -36,5 +38,13 @@ class SimpleEqualitySolver extends GeneticAlgorithm {
 object Main extends App {
 
   val obj = new SimpleEqualitySolver()
-  obj.findBest()
+  val best = obj.findBest()
+  println(s"a + 2b + 3c - 15d = 30")
+
+  val a = best(0).asInstanceOf[VarGen].value
+  val b = best(1).asInstanceOf[VarGen].value
+  val c = best(2).asInstanceOf[VarGen].value
+  val d = best(3).asInstanceOf[VarGen].value
+
+  println(s"$a + 2*$b + 3*$c - 15*$d = 30")
 }
