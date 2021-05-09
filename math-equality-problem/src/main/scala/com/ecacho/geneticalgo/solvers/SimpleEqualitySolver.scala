@@ -1,4 +1,6 @@
-package com.ecacho.mathequalityproblem
+package com.ecacho.geneticalgo.solvers
+
+import com.ecacho.geneticalgo.ga.{Gen, GeneticAlgorithm}
 
 import scala.util.Random
 
