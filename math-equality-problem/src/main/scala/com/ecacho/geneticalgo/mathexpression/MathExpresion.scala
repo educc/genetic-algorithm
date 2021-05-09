@@ -11,4 +11,9 @@ final case class Minus(a: Expr, b: Expr) extends TwoNumExpr
 final case class Times(a: Expr, b: Expr) extends TwoNumExpr
 final case class Divide(a: Expr, b: Expr) extends TwoNumExpr
 
-final case class MathEquation(expression: Expr, equality: BigDecimal)
+final case class MathEquation(expression: Expr, equality: BigDecimal) {
+
+  def getVariableNames() = MathExpr.getVariableNames(expression)
+
+  override def toString: String = MathExpr.show(expression) + " = " + equality
+}

@@ -5,12 +5,17 @@ import com.ecacho.geneticalgo.mathexpression._
 
 import scala.util.Random
 
+class MultiEquationSolver(equationList: Seq[MathEquation]) extends GeneticAlgorithm {
 
-class MathExpressionSolver(equation: MathEquation) extends GeneticAlgorithm {
+
+  assert(equationList.size >= 2)
+  //TODO: validate all equations have the same variables
+
+  val exprVariableNameList = MathExpr.getVariableNames(equationList(0).expression)
+
 
   override val populationMax = 100
-
-  val exprVariableNameList = MathExpr.getVariableNames(equation.expression)
+  override val fitnessGoal = equationList.size.toDouble
 
   private case class VarValue(num: Int) extends Gen
 
@@ -22,14 +27,16 @@ class MathExpressionSolver(equation: MathEquation) extends GeneticAlgorithm {
     })
 
   override def calculateFitness(chromosome: Chromosome): BigDecimal = {
-    val refValues = exprVariableNameList
+    implicit val refValues = exprVariableNameList
       .zip(chromosome.asInstanceOf[Seq[VarValue]])
       .map(it => (it._1 -> it._2.num.toDouble))
       .toMap
 
-    val solveValue = MathExpr.solve(equation.expression)(refValues)
+    val r = equationList
+      .map(it => (it.equality -> MathExpr.solve(it.expression)))
+      .map(it => 1 / (1 + (it._1 - it._2).abs))
+      .sum
 
-    val r: BigDecimal = 1 / (1 + (solveValue - equation.equality).abs)
     r.setScale(4, BigDecimal.RoundingMode.HALF_DOWN)
   }
 
@@ -47,23 +54,17 @@ class MathExpressionSolver(equation: MathEquation) extends GeneticAlgorithm {
       .map({case (varName, value) => (varName -> value.num) })
       .toMap
   }
-
 }
 
-
-object MathExpressionSolver extends App {
-  val expressions = Seq(
-    (Plus(Times(Ref("x"), Literal(2)), Literal(2)), 10),
-    (Plus(Ref("a"), Plus(Times(Literal(2), Ref("b")), Minus(Times(Literal(3), Ref("c")), Times(Literal(15), Ref("d"))))), 30),
+object MultiEquationSolver extends App {
+  val equations = Seq(
+    MathEquation(Plus(Times(Ref("x"), Ref("y")), Plus(Times(Literal(2), Ref("x")), Ref("y"))), -13),
+    MathEquation(Minus(Times(Literal(10), Ref("y")), Times(Literal(2), Ref("x"))), -50),
   )
 
-  expressions.foreach(myexpr => {
-    val equationStr = MathExpr.show(myexpr._1) + " = " + myexpr._2
-    val equation = MathEquation(myexpr._1, myexpr._2)
-    val solver = new MathExpressionSolver(equation)
-    val solution = solver.findVariableValues()
-    println(s"$equationStr")
-    println(solution.map(it => s"${it._1} = ${it._2}").mkString(", "))
-    println("--------------")
-  })
+  equations.foreach(println)
+
+  val solver = new MultiEquationSolver(equations)
+  val solution = solver.findVariableValues()
+  println(solution.map(it => s"${it._1} = ${it._2}").mkString(", "))
 }
