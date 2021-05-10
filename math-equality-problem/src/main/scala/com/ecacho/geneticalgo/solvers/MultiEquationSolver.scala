@@ -10,15 +10,21 @@ class MultiEquationSolver(equationList: Seq[MathEquation]) extends GeneticAlgori
 
   val variableList = equationList.flatten(it => MathExpr.getVariableNames(it.expression)).toSet
 
-  override val populationMax = 200
+  override val populationMax = 500
+  override def crossoverRate = 0.8
+  override def mutationRate = 0.5
   override val fitnessGoal = equationList.size.toDouble
 
-  private case class VarValue(num: Int) extends Gen
+  private case class VarValue(num: Int) extends Gen {
+    override def toString: String = num.toString
+  }
+
+  private def mkRand = Random.between(1, 360)
 
   override def populationGenerator(): LazyList[Chromosome] =
     LazyList.from(0).map(_ => {
       (0 until variableList.size)
-        .map(_ => VarValue(Random.between(1, 180)))
+        .map(_ => VarValue(mkRand))
         .toSeq
     })
 
@@ -40,8 +46,10 @@ class MultiEquationSolver(equationList: Seq[MathEquation]) extends GeneticAlgori
     val idx = Random.between(0, variableList.size)
 //    val newValue = Random.between(1, 30)
     val currentValue = chromosome(idx).asInstanceOf[VarValue].num
-    val increase =  Random.between(-60, 60)
-    val newValue = Math.abs(currentValue + increase)
+    val factor = if (Random.nextBoolean()) -1 else 1
+    val increase =  Math.abs(mkRand) * factor
+    val absValue = Math.abs(currentValue + increase)
+    val newValue = if (absValue == 0) 1 else absValue % 360
     chromosome.patch(idx, Seq(VarValue(newValue)), 1)
   }
 

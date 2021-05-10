@@ -15,6 +15,7 @@ abstract class GeneticAlgorithm {
   // params
   protected def populationMax = 10
   protected def mutationRate = 0.1
+  protected def crossoverRate = 0.1
   protected def fitnessGoal = 1.0
 
   // types
@@ -36,10 +37,28 @@ abstract class GeneticAlgorithm {
       .map(it =>  ChromoFitness(calculateFitness(it), it))
       .sortBy(_.fitness)
 
-  def mutatePopulation(population: Population): Population =
+  private def mutatePopulation(population: Population): Population =
     population.map(it => {
       if (Random.nextDouble() <= mutationRate) mutate(it) else it
     })
+
+  protected def crossover(c1: Chromosome, c2: Chromosome): Chromosome =
+    c1.zip(c2)
+      .map({  case (left, right) => Random.between(0,2) match {
+        case 0 => left
+        case 1 => right
+      }})
+      .toSeq
+
+  private def crossoverPopulation(population: Population): Population =
+    population.map(it => {
+      if (Random.nextDouble() <= crossoverRate)
+        crossover(pickOne(population), pickOne(population))
+      else it
+    })
+
+  private def pickOne(population: Population): Chromosome =
+    population(Random.between(0, populationMax))
 
   private def selectGens(materialByFitness: Seq[ChromoFitness]): Population = {
     val total = materialByFitness.map(_.fitness).sum
@@ -52,7 +71,7 @@ abstract class GeneticAlgorithm {
         acc :+ Tuple2(rounded, item._2)
       }}
 
-    (0 to populationMax)
+    (0 until populationMax)
       .map(_ => {
         val rnd = BigDecimal(Random.nextDouble())
         var last = BigDecimal(0)
@@ -74,17 +93,25 @@ abstract class GeneticAlgorithm {
 
   def findBest(): Chromosome = {
     var population: Population = populationGenerator().take(populationMax).toSeq
-    var bestChromosome: ChromoFitness = ChromoFitness(calculateFitness(population(0)), population(0))
+    var bestEver: ChromoFitness = ChromoFitness(calculateFitness(population(0)), population(0))
     var generations = 1
 
-    while (bestChromosome.fitness < fitnessGoal) {
+    while (bestEver.fitness < fitnessGoal) {
       val populationByFitness = orderByFitness(population)
-      bestChromosome = populationByFitness.last
-      population = mutatePopulation(selectGens(populationByFitness))
+      val bestCurrent = populationByFitness.last
 
-      println(s"Generation = $generations\tfitness=${bestChromosome.fitness}\t${bestChromosome.chromosome}")
+      val bestPopulation = selectGens(populationByFitness)
+      population = mutatePopulation(crossoverPopulation(bestPopulation))
+
+      if (bestCurrent.fitness > bestEver.fitness) {
+        bestEver = bestCurrent
+      }
+
+      val msgCurrent = s"fitness=${bestCurrent.fitness}\t${bestCurrent.chromosome}"
+      val msgEver = s"fitness=${bestEver.fitness}\t${bestEver.chromosome}"
+      println(s"Generation = $generations\t(ever)$msgEver\t(current)$msgCurrent")
       generations = generations + 1
     }
-    bestChromosome.chromosome
+    bestEver.chromosome
   }
 }
