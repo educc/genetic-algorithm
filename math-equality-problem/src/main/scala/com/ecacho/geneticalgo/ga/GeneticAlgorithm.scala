@@ -109,7 +109,7 @@ abstract class GeneticAlgorithm {
 
       val msgCurrent = s"fitness=${bestCurrent.fitness}\t${bestCurrent.chromosome}"
       val msgEver = s"fitness=${bestEver.fitness}\t${bestEver.chromosome}"
-      println(s"Generation = $generations\t(ever)$msgEver\t(current)$msgCurrent")
+//      println(s"Generation = $generations\t(ever)$msgEver\t(current)$msgCurrent")
       generations = generations + 1
     }
     bestEver.chromosome

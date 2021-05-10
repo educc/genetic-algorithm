@@ -17,9 +17,9 @@ object MathExpr {
   def solve(e: Expr)(implicit refValues: Map[String, Double]): Double = e match {
     case Literal(x) => x
     case Ref(x) => refValues(x)
-    case Times(a, b) => solve(a) * solve(b)
     case Plus(a, b) => solve(a) + solve(b)
     case Minus(a, b) => solve(a) - solve(b)
+    case Times(a, b) => solve(a) * solve(b)
     case Divide(a, b) => solve(a) / solve(b)
   }
 

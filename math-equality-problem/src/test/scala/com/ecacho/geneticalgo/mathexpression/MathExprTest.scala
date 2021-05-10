@@ -18,6 +18,22 @@ class MathExprTest extends AnyFunSuite {
     })
   }
 
+
+  test("solve equation") {
+    implicit val map = Map.empty[String, Double]
+    Seq(
+      // 5 - 2 * 5
+      MathEquation(Minus(5, Times(2,5)), -5),
+      //0 - 2 * 5 + 10
+      MathEquation(Plus(Minus(0, Times(2,5)), 10), 0),
+      //2*10- 2*50
+      MathEquation(Minus(Times(2, 10),  Times(2, 50)), -80),
+    ).foreach(myexpr => {
+      val solution = MathExpr.solve(myexpr.expression)
+      assert(solution == myexpr.equality)
+    })
+  }
+
   test("get variable names") {
     Seq(
       (Plus(2, "x") -> Set("x")),

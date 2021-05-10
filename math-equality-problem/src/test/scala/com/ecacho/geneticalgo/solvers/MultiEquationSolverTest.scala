@@ -25,12 +25,12 @@ class MultiEquationSolverTest extends AnyFunSuite {
 
 
   test("solving geometric problem") {
-//    θ + 180 - 2α + 80 = 180
+//    2θ + 180 - 2α + 80 = 180
 //    θ - 2α + α - x = -180
 //    2θ - 2α = -80
     val equations = Seq(
-      MathEquation(Plus(Times(2, "θ"), Minus(180, Plus(Times(2, "α"), 80))), 180),
-      MathEquation(Minus("θ",  Plus(Times(2,"α"), Minus("α", "x"))), -180),
+      MathEquation(Plus(Times(2,"θ"), Plus(Minus(180, Times(2, "α")), 80)), 180),
+      MathEquation(Plus(Minus("θ",Times(2,"θ")), Minus("α","x")), -180),
       MathEquation(Minus(Times(2, "θ"),  Times(2, "α")), -80),
     )
     equations.foreach(println)
@@ -39,7 +39,7 @@ class MultiEquationSolverTest extends AnyFunSuite {
     val solution = solver.findVariableValues()
     println(solution.map(it => s"${it._1} = ${it._2}").mkString(", "))
 
-//    assert(solution("x") == 10)
-//    assert(solution("y") == -3)
+    assert(solution("x") == 220)
+    assert(solution("θ") - solution("α") == -40)
   }
 }
