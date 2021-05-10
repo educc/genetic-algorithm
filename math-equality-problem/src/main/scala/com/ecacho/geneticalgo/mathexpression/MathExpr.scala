@@ -2,9 +2,16 @@ package com.ecacho.geneticalgo.mathexpression
 
 object MathExpr {
 
-  def getVariableNames(e: Expr): Seq[String] = {
-    val pattern = "[a-zA-Z]".r
-    (pattern findAllIn show(e)).toList
+  def getVariableNames(e: Expr): Set[String] = {
+    def inner(root: Expr, acc: Set[String]): Set[String] = root match {
+      case Literal(_) => Set.empty
+      case Ref(x) => Set(x)
+      case Times(a, b) => inner(a, acc) ++ inner(b, acc)
+      case Plus(a, b) => inner(a, acc) ++ inner(b, acc)
+      case Minus(a, b) => inner(a, acc) ++ inner(b, acc)
+      case Divide(a, b) => inner(a, acc) ++ inner(b, acc)
+    }
+    inner(e, Set.empty)
   }
 
   def solve(e: Expr)(implicit refValues: Map[String, Double]): Double = e match {
@@ -35,18 +42,4 @@ object MathExpr {
     case Minus(a, b) => show(a) + " - " + show(b)
   }
 
-  def main(args: Array[String]): Unit = {
-    val refValues = Map[String, Double](("x" -> 2))
-    Seq(
-      (Plus(Literal(2), Literal(20))),
-      (Plus(Times(Literal(2), Literal(3)), Literal(2))),
-      (Plus(Times(Ref("x"), Literal(3)), Literal(2))),
-      (Times(Plus(Literal(2), Literal(3)), Literal(2))),
-      (Times(Plus(Literal(2), Literal(3)), Plus(Literal(5), Literal(2)))),
-    ).foreach(myexpr => {
-      val equationStr = MathExpr.show(myexpr)
-      val equationResult = MathExpr.solve(myexpr)(refValues)
-      println(s"$equationStr = $equationResult")
-    })
-  }
 }

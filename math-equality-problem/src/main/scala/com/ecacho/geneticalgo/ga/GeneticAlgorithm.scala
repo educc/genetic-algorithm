@@ -82,7 +82,7 @@ abstract class GeneticAlgorithm {
       bestChromosome = populationByFitness.last
       population = mutatePopulation(selectGens(populationByFitness))
 
-//      println(s"Generation = $generations\tfitness=${bestChromosome.fitness}\t${bestChromosome.chromosome}")
+      println(s"Generation = $generations\tfitness=${bestChromosome.fitness}\t${bestChromosome.chromosome}")
       generations = generations + 1
     }
     bestChromosome.chromosome

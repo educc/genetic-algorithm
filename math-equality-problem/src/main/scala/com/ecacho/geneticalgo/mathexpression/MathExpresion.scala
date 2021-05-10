@@ -17,3 +17,4 @@ final case class MathEquation(expression: Expr, equality: BigDecimal) {
 
   override def toString: String = MathExpr.show(expression) + " = " + equality
 }
+
